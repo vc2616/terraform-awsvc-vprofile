@@ -1,0 +1,81 @@
+resource "aws_security_group" "vprofile-bean-elb-sg" {
+       name = "vprofile-bean-elb-sg"
+       description = "security group for bean-elb"
+       vpc_id = "module.vpc.vpc_id"
+
+  egress {
+    from_port = 0
+    protocol  = "-1"
+    to_port   = 0
+    cidr_blocks = [0.0.0.0/0]
+  }
+
+  ingress {
+    from_port = 80
+    protocol  = "tcp"
+    to_port   = 80
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
+resource "aws_security_group" "vprofile-basting-sg" {
+  name        = "vprofile-basting-sg"
+  description = "security group for bastionisioner ec2 instance"
+  vpc_id      = module.vpc.vpc_id
+
+  egress {
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
+    cidr_blocks = [0.0.0.0/0]
+  }
+
+  ingress {
+    from_port   = 22
+    protocol    = "tcp"
+    to_port     = 22
+    cidr_blocks = ["var.MYIP"]
+  }
+}
+
+resource "aws_security_group" "vprofile-prod-sg" {
+  name = "vprofile-prod-sg"
+  description = "security group for beanstalk ec2 instance"
+  vpc_id = module.vpc.vpc_id
+
+  egress {
+    from_port = 0
+    protocol  = "-1"
+    to_port   = 0
+    cidr_blocks = [0.0.0.0/0]
+  }
+
+  ingress {
+    from_port = 22
+    protocol  = "tcp"
+    to_port   = 22
+    cidr_blocks = ["var.MYIP"]
+    security_groups = [aws_security_group.vprofile-basting-sg.id]
+  }
+}
+
+resource "aws_security_group" "vprofile-backend-sg" {
+  name = "vprofile-backend-sg"
+  description = "security group for RDS, active mq, elastic cache"
+  vpc_id = module.vpc.vpc_id
+
+  egress {
+    from_port = 0
+    protocol  = "-1"
+    to_port   = 0
+    cidr_blocks = [0.0.0.0/0]
+  }
+
+  ingress {
+    from_port = 22
+    protocol  = "-1"
+    to_port   = 0
+    security_groups = [aws_security_group.vprofile-prod-sg.id]
+  }
+}
