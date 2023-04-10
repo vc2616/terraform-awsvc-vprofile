@@ -47,7 +47,7 @@ variable "instance_count" {
   default = "1"
 }
 
-variable "VPN_NAME" {
+variable "VPC_NAME" {
   default = "vprofile-VPC"
 }
 
